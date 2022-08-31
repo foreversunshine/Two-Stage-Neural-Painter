@@ -102,7 +102,7 @@ print('IMAGE NAME: {}'.format(IMAGE_NAME))
 
 
 neural_painter = Generator(len(ACTIONS_TO_IDX), 64, 3).to(device)
-neural_painter.load_state_dict(torch.load('sgan/sdcgan50_4b2_fc_10.tar'))
+neural_painter.load_state_dict(torch.load('sgan/oilpainting_stroke.tar'))
 
 
 # Normalization expected by GoogleNet (images scaled to (-1, 1))
