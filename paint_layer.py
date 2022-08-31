@@ -83,9 +83,6 @@ resnet18 = torch.hub.load('pytorch/vision:v0.9.0', 'resnet18', pretrained=True)
 vgg19 = torch.hub.load('pytorch/vision:v0.9.0', 'vgg19', pretrained=True)
 
 STROKES_PER_BLOCK = 3 #@param {type:"slider", min:1, max:15, step:1}
-# REPEAT_CANVAS_HEIGHT = 4 #@param {type:"slider", min:1, max:30, step:1}
-# REPEAT_CANVAS_WIDTH = 4 #@param {type:"slider", min:1, max:30, step:1}
-#@markdown REPEAT_CANVAS_HEIGHT and REPEAT_CANVAS_WIDTH are important parameters to choose how many 64x64 canvases make up the height and width of the output image. Try matching them with your target's aspect ratio.
 LAYER = "3B" #@param ["3A", "3B"]
 LAYER_IDX = -12 if LAYER == "3A" else -13
 #@markdown Which GoogleNet layer to use for content loss. Deeper layers (3B) result in more abstract results
@@ -106,7 +103,7 @@ print('IMAGE NAME: {}'.format(IMAGE_NAME))
 
 
 neural_painter = Generator(len(ACTIONS_TO_IDX), 64, 3).to(device)
-neural_painter.load_state_dict(torch.load('sgan/sdcgan50_4b2_fc_10.tar'))
+neural_painter.load_state_dict(torch.load('sgan/oilpainting-stroke.tar'))
 
 
 # Normalization expected by GoogleNet (images scaled to (-1, 1))
@@ -208,12 +205,9 @@ for k in range(1, 4):
         # cost = loss_fn(output_features[0], output_features[1])
         # cost = loss_fn(output_features_res[0], output_features_res[1])
         cost2 = loss_fn(stacked_canvas[0], stacked_canvas[1])
-        cost = loss_fn(output_features[0], output_features[1]) * 0.1 + loss_fn(output_features_res[0], output_features_res[1]) * 0.9
+        cost = loss_fn(output_features[0], output_features[1]) * 0.5 + loss_fn(output_features_res[0], output_features_res[1]) * 0.5
         # cost = torch.pow(output_features[0] - output_features[1], 2).mean()  # L2 loss
-        # cost = torch.abs(output_features[0] - output_features[1]).mean() * 0.8 + torch.abs(output_features_vgg[0] - output_features_vgg[1]).mean() * 0.2  # L1 loss
-        # cost = torch.abs(output_features[0] - output_features[1]).mean()  # L1 loss
-        # cost = cost + torch.abs(stacked_canvas[0] - stacked_canvas[1]).mean()  # pixel loss
-#         f.write(str(idx)+"\t"+str(cost.item())+"\t"+str(cost2.item())+"\n")
+
         cost.backward()
         optimizer.step()
         if idx % 10 == 0:
@@ -242,12 +236,9 @@ for k in range(1, 4):
         # cost = loss_fn(output_features[0], output_features[1])
         # cost = loss_fn(output_features_res[0], output_features_res[1])
         cost2 = loss_fn(stacked_canvas[0], stacked_canvas[1])
-        cost = loss_fn(output_features[0], output_features[1]) * 0.1 + loss_fn(output_features_res[0], output_features_res[1]) * 0.9
+        cost = loss_fn(output_features[0], output_features[1]) * 0.5 + loss_fn(output_features_res[0], output_features_res[1]) * 0.5
         # cost = torch.pow(output_features[0] - output_features[1], 2).mean()  # L2 loss
-        # cost = torch.abs(output_features[0] - output_features[1]).mean() * 0.8 + torch.abs(output_features_vgg[0] - output_features_vgg[1]).mean() * 0.2  # L1 loss
-        # cost = torch.abs(output_features[0] - output_features[1]).mean()  # L1 loss
-        # cost = cost + torch.abs(stacked_canvas[0] - stacked_canvas[1]).mean()  # pixel loss
-#         f.write(str(idx)+"\t"+str(cost.item())+"\t"+str(cost2.item())+"\n")
+
         cost.backward()
         optimizer.step()
         if idx % 10 == 0:
